@@ -1,71 +1,70 @@
-# Language Learning Assistant
+# ConvoLingo - Talk and Learn New Languages! 🗣️🌍
 
-A minimal Python application using VAPI's Language Learning Assistant.
+ConvoLingo is a fun app that helps you learn new languages by talking with an AI teacher!
 
-## Setup
+## 🚀 Quick Start
 
-1. Install dependencies:
+1. Make sure you have Python installed on your computer.
+
+2. Put your magic key in a file called `.env`:
+   ```
+   VAPI_API_KEY=your_magic_key_here
+   ```
+
+3. Install ConvoLingo:
+   ```
+   cd convo-lingo
+   pip install -e .
+   ```
+
+4. Start talking in your new language:
+   ```
+   convolingo interactive --target German
+   ```
+
+## 🎮 Fun Commands
+
+### Talk and Learn
 ```
-brew install portaudio
-pip install -r requirements.txt
+convolingo interactive --target German --origin English
 ```
+This starts a fun chat where you can practice German! Type messages and get replies.
 
-2. Create a `.env` file with your VAPI API key:
+### Set Up Special Tools
 ```
-VAPI_API_KEY=your_api_key_here
+convolingo setup
 ```
+This sets up special tools like a vocabulary helper!
 
-## Usage
+## 📝 What You Can Learn
 
-### Basic Session
-```
-python main.py
-```
+You can learn many languages:
+- German 🇩🇪
+- More TBA
 
-### Interactive Session with Text Input
-```
-python interactive.py
-```
+## 🛠️ For Grown-Ups
 
-## Tool Integration
-
-### Automated Setup with setup_tool.py
-
-To automatically set up the vocabulary tool integration:
+ConvoLingo is organized like this:
 
 ```
-python setup_tool.py
-```
-
-This script will:
-1. Validate your VAPI API key
-2. Start the Flask webhook server
-3. Start ngrok to expose your local server
-4. Create the vocabulary tool in VAPI
-5. Configure the server URL
-6. Assign the tool to the Language Learning Assistant
-
-The script will keep running to maintain the ngrok tunnel. Press Ctrl+C to stop.
-
-### Manual Setup
-
-To manually test the vocabulary tool integration:
-
-1. Start the webhook server:
-```
-python ngrok_server.py
-```
-
-2. Expose your local server using ngrok:
-```
-ngrok http 5000
+convo-lingo/              # Main folder
+├── README.md             # This guide
+├── setup.py              # Installation settings
+├── .env                  # Your magic key goes here!
+├── convolingo/           # App code
+    ├── __main__.py       # Starting point
+    ├── api/              # Talking to the teacher
+    ├── cli/              # Command buttons
+    ├── tools/            # Helper tools
+    └── utils/            # Useful extras
 ```
 
-3. Copy the ngrok URL (e.g. `https://12345.ngrok.io/api/vocabulary`) and use it as your server URL in VAPI.
+## 🐞 Problems?
 
-## Development Notes
+- Make sure your magic key in `.env` is right!
+- Try reinstalling: `pip install -e .`
+- Make sure you're in the right folder when typing commands
 
-- Assistant ID: 4df2000e-479b-434e-8373-6ca1809233e2
-- Vocabulary Tool ID: b7bf97bf-c4cb-4d41-9db2-038460f17870
+## 📜 License
 
-Both scripts default to English-to-German learning. To use a different language, modify the function call arguments. 
+MIT - That means it's free to use and share! 

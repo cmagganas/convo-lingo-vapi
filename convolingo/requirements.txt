@@ -1,0 +1,9 @@
+requests==2.31.0
+python-dotenv==1.0.0
+flask==2.2.5
+werkzeug==2.2.3
+pyngrok==6.0.0
+setuptools==68.2.2
+wheel==0.41.2
+typing-extensions==4.8.0
+vapi_python 

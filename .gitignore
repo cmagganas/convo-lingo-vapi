@@ -5,10 +5,55 @@ __pycache__/
 *.so
 .Python
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Log files
+*.log
+
+# Conversation history
+conversation_history/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*~
 
 # Virtual environments
 venv/
@@ -102,3 +147,6 @@ venv.bak/
 
 # Project specific
 conversation_history/ 
+
+# Cursor rules
+.cursorrules

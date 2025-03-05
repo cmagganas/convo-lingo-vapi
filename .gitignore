@@ -70,6 +70,7 @@ env/
 # Project specific
 vocabulary/
 conversation_history/
+build/
 
 # IDE
 .idea/

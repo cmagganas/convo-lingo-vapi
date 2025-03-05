@@ -6,7 +6,9 @@ from convolingo.cli.interactive import InteractiveSession
 from convolingo.cli.session import Session
 from convolingo.cli.setup import SetupTool
 from convolingo.utils.logging_setup import configure_logging
-from convolingo.utils.config import DEFAULT_TARGET_LANGUAGE, DEFAULT_ORIGIN_LANGUAGE
+from convolingo.utils.config import (
+    DEFAULT_TARGET_LANGUAGE, DEFAULT_ORIGIN_LANGUAGE, DEFAULT_CHAPTER
+)
 
 # Configure logging
 configure_logging()
@@ -36,6 +38,15 @@ def main():
         default=DEFAULT_ORIGIN_LANGUAGE,
         help=f'Origin language (default: {DEFAULT_ORIGIN_LANGUAGE})'
     )
+    interactive_parser.add_argument(
+        '--chapter', '-c',
+        default=DEFAULT_CHAPTER,
+        help='Chapter or module to study'
+    )
+    interactive_parser.add_argument(
+        '--user-id', '-u',
+        help='User ID for personalized learning experience'
+    )
     
     # Basic session command
     session_parser = subparsers.add_parser(
@@ -51,6 +62,15 @@ def main():
         '--origin', '-o',
         default=DEFAULT_ORIGIN_LANGUAGE,
         help=f'Origin language (default: {DEFAULT_ORIGIN_LANGUAGE})'
+    )
+    session_parser.add_argument(
+        '--chapter', '-c',
+        default=DEFAULT_CHAPTER,
+        help='Chapter or module to study'
+    )
+    session_parser.add_argument(
+        '--user-id', '-u',
+        help='User ID for personalized learning experience'
     )
     session_parser.add_argument(
         '--duration', '-d',
@@ -80,14 +100,27 @@ def main():
     try:
         if args.command == 'interactive':
             session = InteractiveSession()
-            session.start(args.target, args.origin)
+            session.start(
+                target_language=args.target,
+                origin_language=args.origin,
+                chapter=getattr(args, 'chapter', DEFAULT_CHAPTER),
+                user_id=getattr(args, 'user_id', None)
+            )
         elif args.command == 'session':
             session = Session()
-            session.start(args.target, args.origin, getattr(args, 'duration', None))
+            session.start(
+                target_language=args.target,
+                origin_language=args.origin,
+                chapter=getattr(args, 'chapter', DEFAULT_CHAPTER),
+                user_id=getattr(args, 'user_id', None),
+                duration=getattr(args, 'duration', None)
+            )
         elif args.command == 'setup':
             setup = SetupTool()
-            setup.run_setup(not getattr(args, 'no_server', False), 
-                           getattr(args, 'tool_id', None))
+            setup.run_setup(
+                not getattr(args, 'no_server', False),
+                getattr(args, 'tool_id', None)
+            )
         else:
             # If no command provided, show help
             parser.print_help()

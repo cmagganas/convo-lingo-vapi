@@ -6,9 +6,24 @@ from dotenv import load_dotenv
 # Constants
 DEFAULT_TARGET_LANGUAGE = "German"
 DEFAULT_ORIGIN_LANGUAGE = "English"
+DEFAULT_CHAPTER = "Chapter 3: Ordering a donner (cost, cash/card, getting change, what sides they have)"
 ASSISTANT_ID = "4df2000e-479b-434e-8373-6ca1809233e2"
 VOCABULARY_TOOL_ID = "b7bf97bf-c4cb-4d41-9db2-038460f17870"
 WEBHOOK_PORT = 5000
+
+# Default system prompt template
+# Note: This template is for documentation purposes only.
+# The assistant configuration shows that the system prompt is set in the 
+# model.messages array rather than directly as systemPrompt.
+DEFAULT_SYSTEM_PROMPT = """
+You are a language learning teaching assistant named Emma.
+You will begin a lesson plan starting in {native_language} and begin role playing speaking in {target_language}.
+
+native_language = "{native_language}"
+target_language = "{target_language}"
+
+{chapter}
+"""
 
 
 class Config:
@@ -41,14 +56,6 @@ class Config:
         
         # Ensure history directory exists
         self.history_dir.mkdir(exist_ok=True)
-
-    def get_assistant_config(self, target_language: str = DEFAULT_TARGET_LANGUAGE) -> Dict[str, Any]:
-        """Generate assistant configuration with specified language"""
-        return {
-            "variableValues": {
-                "language": target_language
-            }
-        }
 
 
 # Create singleton instance

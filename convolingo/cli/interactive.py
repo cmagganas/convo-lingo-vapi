@@ -5,7 +5,9 @@ from typing import Callable, Dict, Any, Optional
 
 from convolingo.api.client import VapiClient
 from convolingo.tools.vocabulary import VocabularyTool
-from convolingo.utils.config import DEFAULT_TARGET_LANGUAGE, DEFAULT_ORIGIN_LANGUAGE
+from convolingo.utils.config import (
+    DEFAULT_TARGET_LANGUAGE, DEFAULT_ORIGIN_LANGUAGE, DEFAULT_CHAPTER
+)
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -20,25 +22,44 @@ class InteractiveSession:
         self.vocabulary_tool = VocabularyTool()
         self.running = False
     
-    def start(self, target_language: str, origin_language: str) -> None:
+    def start(
+        self, 
+        target_language: str = DEFAULT_TARGET_LANGUAGE,
+        origin_language: str = DEFAULT_ORIGIN_LANGUAGE,
+        chapter: str = DEFAULT_CHAPTER,
+        user_id: Optional[str] = None
+    ) -> None:
         """
         Start an interactive session
         
         Args:
             target_language: The language to learn
             origin_language: The user's native language
+            chapter: The current chapter or module being studied
+            user_id: Optional user ID for personalization
         """
         self.running = True
         
         logger.info(f"Starting {origin_language} to {target_language} "
                   f"learning session...")
         
-        # Connect to VAPI
-        if not self.client.connect(target_language):
+        # Connect to VAPI with all parameters
+        if not self.client.connect(
+            target_language=target_language,
+            native_language=origin_language,
+            chapter=chapter,
+            user_id=user_id
+        ):
             logger.error("Failed to connect to VAPI. Exiting.")
             return
         
         print(f"Connected. Learning {target_language} from {origin_language}.")
+        print(f"Current chapter: {chapter}")
+        
+        if chapter != DEFAULT_CHAPTER:
+            print(f"Note: If the assistant still discusses {DEFAULT_CHAPTER.split(':')[0]}, ")
+            print("it might not be using the 'chapter' variable in its system prompt.")
+        
         print("Type 'exit' to quit, 'help' for commands.")
         
         # Start input thread

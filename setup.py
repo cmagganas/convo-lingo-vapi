@@ -32,4 +32,9 @@ setup(
             "convolingo=convolingo.__main__:main",
         ],
     },
+    options={
+        'egg_info': {
+            'egg_base': 'build',
+        },
+    },
 ) 

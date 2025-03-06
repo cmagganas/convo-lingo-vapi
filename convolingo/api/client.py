@@ -1,16 +1,46 @@
 import time
 import logging
+import requests
 from typing import Callable, Optional
 
 from vapi_python import Vapi
 from convolingo.utils.config import (
-    config, ASSISTANT_ID, DEFAULT_TARGET_LANGUAGE, 
-    DEFAULT_ORIGIN_LANGUAGE, DEFAULT_CHAPTER,
-    VOCABULARY_TOOL_ID
+    config, DEFAULT_TARGET_LANGUAGE, 
+    DEFAULT_ORIGIN_LANGUAGE, DEFAULT_CHAPTER
 )
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+# Constants for vocabulary tool creation
+TOOL_NAME = 'vocabularyTool'
+TOOL_DESCRIPTION = 'Tool to add, review and search vocabulary words'
+TOOL_PARAMETERS = {
+    "type": "object",
+    "required": ["action"],
+    "properties": {
+        "word": {
+            "type": "string",
+            "description": "The vocabulary word to add or search for"
+        },
+        "action": {
+            "type": "string",
+            "description": "The action to perform (add, list, search)"
+        },
+        "language": {
+            "type": "string",
+            "description": "The language the word is in"
+        },
+        "translation": {
+            "type": "string",
+            "description": "The translation of the word"
+        },
+        "notes": {
+            "type": "string",
+            "description": "Additional notes about the word"
+        }
+    }
+}
 
 
 class VapiClient:
@@ -20,6 +50,52 @@ class VapiClient:
         """Initialize the VAPI client"""
         self.client = None
         self.is_connected = False
+        self.vocabulary_tool_id = None
+    
+    def _create_vocabulary_tool(self) -> Optional[str]:
+        """
+        Create a new vocabulary tool in VAPI
+        
+        Returns:
+            str: Tool ID if successful, None otherwise
+        """
+        try:
+            headers = {
+                "Authorization": f"Bearer {config.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Create the tool - note the correct endpoint is /tool (singular)
+            payload = {
+                "type": "function",  # Specify the type as function
+                "function": {
+                    "name": TOOL_NAME,
+                    "description": TOOL_DESCRIPTION,
+                    "parameters": TOOL_PARAMETERS
+                }
+            }
+            
+            response = requests.post(
+                f"{config.api_base}/tool",  # Fixed endpoint from /tools to /tool
+                headers=headers,
+                json=payload
+            )
+            
+            if response.status_code == 201:
+                data = response.json()
+                tool_id = data.get("id")
+                logger.info(f"Vocabulary tool created with ID: {tool_id}")
+                return tool_id
+            else:
+                logger.error(
+                    f"Failed to create tool: {response.status_code} {response.text}"
+                )
+                # Continue without the tool if creation fails
+                return None
+        except Exception as e:
+            logger.error(f"Error creating vocabulary tool: {e}")
+            # Continue without the tool if an exception occurs
+            return None
     
     def connect(
         self, 
@@ -27,7 +103,6 @@ class VapiClient:
         native_language: str = DEFAULT_ORIGIN_LANGUAGE,
         chapter: str = DEFAULT_CHAPTER,
         user_id: Optional[str] = None,
-        custom_system_prompt: Optional[str] = None
     ) -> bool:
         """
         Connect to the VAPI service
@@ -37,8 +112,6 @@ class VapiClient:
             native_language: The user's native language
             chapter: The current chapter or module being studied
             user_id: Optional user ID for personalization
-            custom_system_prompt: Optional custom system prompt template
-                (Used when creating a custom assistant with a dynamic chapter)
             
         Returns:
             bool: True if connection successful, False otherwise
@@ -53,80 +126,54 @@ class VapiClient:
                 f"native={native_language}, chapter='{chapter[:30]}...'"
             )
             
-            # Check if we're using non-default chapter 
-            using_custom_chapter = (chapter != DEFAULT_CHAPTER)
+            # Create the system prompt with the dynamic variables
+            system_prompt = (
+                "You are a language learning teaching assistant named Emma.\n"
+                "You will begin a lesson plan starting in {native_language} "
+                "and begin role playing speaking in {target_language}.\n\n"
+                "native_language = \"{native_language}\"\n"
+                "target_language = \"{target_language}\"\n\n"
+                "{chapter}"
+            ).format(
+                native_language=native_language,
+                target_language=target_language,
+                chapter=chapter
+            )
             
-            if using_custom_chapter:
-                # For custom chapters, we create a completely new assistant
-                # with the chapter directly embedded in the system prompt
-                # This approach is needed because the default assistant has
-                # Chapter 3 hardcoded in its system prompt
-                
-                # Create the system prompt with the custom chapter
-                system_prompt = (
-                    "You are a language learning teaching assistant named Emma.\n"
-                    "You will begin a lesson plan starting in {native_language} "
-                    "and begin role playing speaking in {target_language}.\n\n"
-                    "native_language = \"{native_language}\"\n"
-                    "target_language = \"{target_language}\"\n\n"
-                    f"{chapter}"
-                ).format(
-                    native_language=native_language,
-                    target_language=target_language
-                )
-                
-                # Create a new assistant configuration based on the existing one
-                assistant = {
-                    "model": {
-                        "model": "gpt-3.5-turbo", 
-                        "provider": "openai",
-                        "temperature": 0.7,
-                        "toolIds": [VOCABULARY_TOOL_ID],
-                        "messages": [
-                            {
-                                "role": "system",
-                                "content": system_prompt
-                            }
-                        ]
-                    },
-                    "voice": {
-                        "model": "eleven_multilingual_v2",
-                        "voiceId": "S9EGwlCtMF7VXtENq79v",
-                        "provider": "11labs",
-                        "stability": 0.5,
-                        "similarityBoost": 0.75
-                    },
-                    "transcriber": {
-                        "model": "nova-3",
-                        "language": "en-US",
-                        "provider": "deepgram"
-                    }
-                    # variableValues are not supported here
-                    # Variables are already interpolated into the system prompt directly
+            # Create a custom assistant configuration
+            assistant = {
+                "model": {
+                    "model": "gpt-3.5-turbo", 
+                    "provider": "openai",
+                    "temperature": 0.7,
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": system_prompt
+                        }
+                    ]
+                },
+                "voice": {
+                    "model": "eleven_multilingual_v2",
+                    "voiceId": "S9EGwlCtMF7VXtENq79v",
+                    "provider": "11labs",
+                    "stability": 0.5,
+                    "similarityBoost": 0.75
+                },
+                "transcriber": {
+                    "model": "nova-3",
+                    "language": "en-US",
+                    "provider": "deepgram"
                 }
-                
-                # Use the assistant directly
-                self.client.start(assistant=assistant)
-                logger.info(f"Created custom assistant with chapter: {chapter}")
-            else:
-                # For the default chapter, use the existing assistant
-                assistant_config = {
-                    "variableValues": {
-                        "native_language": native_language,
-                        "target_language": target_language
-                    }
-                }
-                
-                # Add user ID if provided
-                if user_id:
-                    assistant_config["userId"] = user_id
-                
-                # Use the pre-configured assistant ID with overrides
-                self.client.start(
-                    assistant_id=ASSISTANT_ID,
-                    assistant_overrides=assistant_config
-                )
-                logger.info(f"Using existing assistant ID: {ASSISTANT_ID}")
+            }
+            
+            # Add user ID if provided
+            if user_id:
+                assistant["userId"] = user_id
+            
+            # Use the assistant directly
+            self.client.start(assistant=assistant)
+            logger.info(f"Created custom assistant with chapter: {chapter}")
             
             self.is_connected = True
             logger.info(
@@ -195,4 +242,4 @@ class VapiClient:
         except Exception as e:
             logger.error(f"Error maintaining connection: {e}")
         finally:
-            self.disconnect() 
+            self.disconnect()

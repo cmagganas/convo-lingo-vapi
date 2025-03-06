@@ -5,7 +5,7 @@ from pathlib import Path
 import os
 from datetime import datetime
 
-from convolingo.utils.config import config, VOCABULARY_TOOL_ID
+from convolingo.utils.config import config
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -13,9 +13,14 @@ logger = logging.getLogger(__name__)
 class VocabularyTool:
     """Tool for managing vocabulary words during language learning sessions"""
     
-    def __init__(self):
-        """Initialize the vocabulary tool"""
-        self.tool_id = VOCABULARY_TOOL_ID
+    def __init__(self, tool_id: Optional[str] = None):
+        """
+        Initialize the vocabulary tool
+        
+        Args:
+            tool_id: Optional tool ID (if None, will use a default value)
+        """
+        self.tool_id = tool_id or "vocabulary-tool"
         self.vocabulary_file = config.history_dir / "vocabulary.json"
         self.vocabulary = self._load_vocabulary()
     

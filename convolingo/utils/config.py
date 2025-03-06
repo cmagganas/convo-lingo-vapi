@@ -1,14 +1,13 @@
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 
 # Constants
 DEFAULT_TARGET_LANGUAGE = "German"
 DEFAULT_ORIGIN_LANGUAGE = "English"
-DEFAULT_CHAPTER = "Chapter 3: Ordering a donner (cost, cash/card, getting change, what sides they have)"
-ASSISTANT_ID = "4df2000e-479b-434e-8373-6ca1809233e2"
-VOCABULARY_TOOL_ID = "b7bf97bf-c4cb-4d41-9db2-038460f17870"
+DEFAULT_CHAPTER = "Chapter 3 - Ordering a donner (cost, cash/card, getting change, what sides they have)"
+# ASSISTANT_ID = "4df2000e-479b-434e-8373-6ca1809233e2"
+# VOCABULARY_TOOL_ID = "b7bf97bf-c4cb-4d41-9db2-038460f17870"
 WEBHOOK_PORT = 5000
 
 # Default system prompt template

@@ -55,11 +55,6 @@ class InteractiveSession:
         
         print(f"Connected. Learning {target_language} from {origin_language}.")
         print(f"Current chapter: {chapter}")
-        
-        if chapter != DEFAULT_CHAPTER:
-            print(f"Note: If the assistant still discusses {DEFAULT_CHAPTER.split(':')[0]}, ")
-            print("it might not be using the 'chapter' variable in its system prompt.")
-        
         print("Type 'exit' to quit, 'help' for commands.")
         
         # Start input thread
